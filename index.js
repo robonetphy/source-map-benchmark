@@ -1,32 +1,56 @@
-const source_map = require('source-map');
+const { performance } = require('perf_hooks');
 const fs = require('fs');
 const path = require('path');
-const map = fs.readFileSync(path.join(__dirname, "source_map", 'c51771c4.js.map')).toString();
-const compiled = fs.readFileSync(path.join(__dirname, "source_map", 'c51771c4.js')).toString();
-var start = (new Date).getTime();
-(new source_map.SourceMapConsumer(map)).then(consumer => {
-    function getOriginalLocation(selectedLine) {
-        var absColumn, column;
-        absColumn = column = selectedLine;
-        // console.log(selectedLine);
-        var pos = compiled.slice(0, column);
-        var line = 1;
-        var lineCount = pos.split(/\r?\n|\r/g);
-        var figure = 0;
-        // console.log(lineCount);
-        for (var i = 0; i < lineCount.length - 1; i++) {
-            figure = figure + (lineCount[i].length);
+const directoryPath = path.join(__dirname, 'source_map');
+const SMConsumerSM = require('./test_source_map');
+const SMConsumerSMJ = require('./test_source_map_js');
+const { plot } = require('nodeplotlib');
+
+
+function measureSync(fn, map, raw, offset) {
+    let start = performance.now();
+    fn(map, raw, offset);
+    return performance.now() - start;
+}
+
+function measurePromise(fn, map, raw, offset) {
+    let onPromiseDone = () => performance.now() - start;
+    let start = performance.now();
+    return fn(map, raw, offset).then(onPromiseDone);
+}
+
+async function main() {
+    const libraries = fs.readdirSync(directoryPath);
+    let maps = [];
+    let sourceMap = [];
+    let sourceMapJS = [];
+    let diffInMs = [];
+    for (var j = 0; j < libraries.length; j++) {
+        library = libraries[j];
+        console.log(`Processing: ${library}`);
+        const files = fs.readdirSync(path.join(directoryPath, library));
+        for (var i = 0; i < files.length; i++) {
+            let fileName = files[i];
+            let splitName = fileName.split('.');
+            if (splitName[splitName.length - 1] !== "map") {
+                console.log(`        File: ${fileName}`);
+                maps.push(fileName);
+                const map = fs.readFileSync(path.join(directoryPath, library, fileName + ".map")).toString();
+                const compiled = fs.readFileSync(path.join(directoryPath, library, fileName)).toString();
+                let duration = measureSync(SMConsumerSMJ, map, compiled, 10);
+                console.log(`           source map js: ${duration} ms`);
+                sourceMapJS.push(duration);
+                duration = await measurePromise(SMConsumerSM, map, compiled, 10);
+                console.log(`           source map: ${duration} ms`);
+                sourceMap.push(duration);
+                diffInMs.push(duration - sourceMapJS[sourceMapJS.length - 1]);
+            }
         }
-        figure = figure + (lineCount.length - 1);
-        column = absColumn - figure;
-        var lookup = { line: lineCount.length ? lineCount.length : line, column: column };
-        return consumer.originalPositionFor(lookup);
     }
-    var count = 0;
-    for (var i = 0; i < compiled.length; i += 10) {
-        count++;
-        getOriginalLocation(i);
-    }
-    var diff = (new Date).getTime() - start;
-    console.log("source_map:", diff / count);
-});
+    const sourceMapInMS = { x: maps, y: sourceMap, type: 'scatter', name: "source map" };
+    const sourceMapJSInMS = { x: maps, y: sourceMapJS, type: 'scatter', name: "source map js" };
+    plot([sourceMapInMS, sourceMapJSInMS]);
+    const diff = { x: maps, y: diffInMs, type: 'scatter', name: "SM-SMJ" };
+    plot([diff]);
+}
+main()
