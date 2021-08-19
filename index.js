@@ -50,7 +50,7 @@ async function main() {
     const sourceMapInMS = { x: maps, y: sourceMap, type: 'scatter', name: "source map" };
     const sourceMapJSInMS = { x: maps, y: sourceMapJS, type: 'scatter', name: "source map js" };
     plot([sourceMapInMS, sourceMapJSInMS]);
-    const diff = { x: maps, y: diffInMs, type: 'scatter', name: "SM-SMJ" };
+    const diff = { x: maps, y: diffInMs, type: 'scatter', name: "sm diff smj" };
     plot([diff]);
 }
 main()
