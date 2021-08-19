@@ -1,8 +1,8 @@
 const source_map_js = require('source-map-js');
 const fs = require('fs');
 const path = require('path');
-const map = fs.readFileSync(path.join(__dirname, "source_maps", 'c51771c4.js.map')).toString();
-const compiled = fs.readFileSync(path.join(__dirname, "source_maps", 'c51771c4.js')).toString();
+const map = fs.readFileSync(path.join(__dirname, "source_map", 'c51771c4.js.map')).toString();
+const compiled = fs.readFileSync(path.join(__dirname, "source_map", 'c51771c4.js')).toString();
 var start = (new Date).getTime();
 const source_map_js_consumer = new source_map_js.SourceMapConsumer(map);
 function getOriginalLocation(selectedLine) {
