@@ -8,5 +8,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "source-map": "^0.7.3",
+    "source-map-js": "^0.6.2"
+  }
 }
