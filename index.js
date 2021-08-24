@@ -37,9 +37,9 @@ async function main() {
                 maps.push(fileName);
                 const map = fs.readFileSync(path.join(directoryPath, library, fileName + ".map")).toString();
                 const compiled = fs.readFileSync(path.join(directoryPath, library, fileName)).toString();
-                let durationOfSMJ = measureSync(SMConsumerSMJ, map, compiled, 10);
+                let durationSMJ = measureSync(SMConsumerSMJ, map, compiled, 10);
                 console.log(`           source map js: ${durationSMJ} ms`);
-                sourceMapJS.push(durationOfSMJ);
+                sourceMapJS.push(durationSMJ);
                 let durationSM = await measurePromise(SMConsumerSM, map, compiled, 10);
                 console.log(`           source map: ${durationSM} ms`);
                 sourceMap.push(durationSM);
