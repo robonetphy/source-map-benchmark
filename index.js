@@ -43,6 +43,7 @@ async function main() {
                 let durationSM = await measurePromise(SMConsumerSM, map, compiled, 10);
                 console.log(`           source map: ${durationSM} ms`);
                 sourceMap.push(durationSM);
+                console.log(`           sm-smj: ${durationSM-durationSMJ} ms`);
                 diffInMs.push(durationSM - durationSMJ);
             }
         }
